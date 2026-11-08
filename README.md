@@ -1,3 +1,20 @@
+# BÀI KIỂM TRA HACK MARATHON 2026 - KTPMUD
+- Môn học: Kỹ thuật phần mềm ứng dụng
+- Giảng viên: TS. Hoàng Quang Huy
+- Mã lớp: 173820 | Mã nhóm: Nhóm 56
+- Track lựa chọn: Track B — Vườn Toán Lớp 3: "Ước lượng trước khi tính đúng"
+- Tag starter: bkt-2026-v1
+
+### Danh sách thành viên:
+1. Đinh Mai Anh - MSSV: 202413981
+2. Nguyễn Thị Như Hiền - MSSV: 202414102
+3. Lê Thị Thanh Hường - MSSV: 202414162
+
+### Tiến độ M1 (08/11/2026):
+- [x] Đã hoàn thành đặc tả yêu cầu: REQUIREMENTS.md
+- [x] Đã hoàn thành quyết định kiến trúc: DECISIONS.md (ADR-01)
+- [x] Đã hoàn thành kế hoạch kiểm thử: TEST_PLAN.md
+
 > **Đây là bản sao đóng băng (starter) dùng cho Bài kiểm tra Hackathon (BKT-2 /
 > Track B) môn Kỹ thuật Phần mềm Ứng dụng (KTPMUD) — KHÔNG phải ứng dụng thật
 > đang vận hành, không kết nối tới dữ liệu/CSDL production thật.** Toàn bộ tên
