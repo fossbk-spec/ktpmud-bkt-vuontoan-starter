@@ -30,3 +30,28 @@ Tuân thủ B-01 đến B-12 của đề thi.
 Starter: fossbk-spec/ktpmud-bkt-vuontoan-starter
 Tag: bkt-2026-v1
 Đặc tả: docs/architecture-reference.md
+## 6. Kế hoạch kiểm thử ban đầu
+
+### 6.1. Kiểm thử chức năng
+- Học sinh truy cập dạng bài mới từ luồng học hiện có.
+- Học sinh phải ước lượng trước khi tính chính xác.
+- Hệ thống phản hồi riêng cho hai bước.
+- Kết quả được lưu sau khi nộp bài.
+- Tải lại trang không làm mất tiến độ đã lưu.
+
+### 6.2. Kiểm thử dữ liệu và chấm điểm
+- Normal: ước lượng hợp lý, kết quả chính xác đúng.
+- Boundary: giá trị nằm đúng biên khoảng hợp lệ.
+- Invalid: bỏ trống, nhập chữ, nhập dữ liệu sai định dạng.
+- Scoring: tính điểm đúng theo quy tắc đã công bố.
+- Security: API không trả đáp án trước khi nộp.
+
+### 6.3. Kiểm thử hồi quy
+- Bốn dạng câu hỏi cũ tiếp tục hoạt động.
+- Không thay đổi authentication và session.
+- Không ảnh hưởng cơ chế lưu điểm và cộng sao.
+
+### 6.4. Kiểm thử tự động
+- Bổ sung npm test.
+- CI chạy npm ci và npm test trên Pull Request.
+- Sử dụng tối thiểu 12 fixture synthetic.
