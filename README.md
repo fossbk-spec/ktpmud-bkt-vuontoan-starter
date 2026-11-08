@@ -1,115 +1,61 @@
-> **Đây là bản sao đóng băng (starter) dùng cho Bài kiểm tra Hackathon (BKT-2 /
-> Track B) môn Kỹ thuật Phần mềm Ứng dụng (KTPMUD) — KHÔNG phải ứng dụng thật
-> đang vận hành, không kết nối tới dữ liệu/CSDL production thật.** Toàn bộ tên
-> người và ảnh thật trong bản gốc đã được thay bằng dữ liệu hư cấu trước khi
-> công khai repo này. Sinh viên làm việc trên fork của repo NÀY, nộp bài qua
-> `ktpmud-project` theo đúng hướng dẫn `nop_bai.md` của KTPMUD — không PR vào
-> ứng dụng Vườn Toán thật.
+# Vườn Toán Lớp 3 — Dạng bài "Ước lượng trước khi tính đúng"
 
----
+**Nhóm thực hiện:** Nhóm 28 — KTPMUD Hack Marathon 2026, Track B (`hoang_mai_toan`)
 
-# 🌱 Vườn Toán Lớp 3 — Trường Tiểu học Hoàng Mai
+## 1. Giới thiệu
 
-Web học Toán lớp 3 gồm giao diện học sinh (bài học, luyện tập, kiểm tra, trò chơi, bảng xếp hạng)
-và khu vực giáo viên (theo dõi lớp, cấp tài khoản). Đợt 1 đã nối **backend thật**:
-đăng nhập/đăng xuất, chấm điểm trên server, lưu điểm & tiến độ vào cơ sở dữ liệu SQLite.
+Dự án mở rộng ứng dụng Vườn Toán Lớp 3 (fork của `ktpmud-bkt-vuontoan-starter`, tag `bkt-2026-v1`) bằng một dạng luyện tập mới: học sinh **ước lượng kết quả phép nhân/chia trước**, rồi mới tính chính xác. Server chấm tất định, phân biệt "ước lượng hợp lý" với "kết quả chính xác" và lưu kết quả bằng cơ chế sẵn có (`attempts`, `progress`). Không dùng LLM để sinh đáp án; toàn bộ dữ liệu là synthetic.
 
-## 1. Cách chạy
+## 2. Cách hoạt động
 
-Yêu cầu: máy có **Node.js 18+**.
+- **Hai bước trong một mục luyện tập.** Bước 1 là câu `estimate` (id `est-NN`), học sinh nhập một số ước lượng. Sau khi bước 1 hợp lệ, giao diện mở bước 2 là câu `input` sẵn có (id `est-NN-exact`) để tính chính xác. Cả hai câu được chấm trong một lượt `POST /api/submissions`.
+- **Quy tắc chấm.** Với đáp án chính xác `E`, ước lượng `x` hợp lý khi `lo ≤ x ≤ hi`, trong đó `lo = ceil(E × 80 / 100)`, `hi = floor(E × 120 / 100)` (sai lệch ±20%, chỉ dùng số nguyên). Ví dụ `48 × 6 = 288` → dải 231–345; ước lượng `50 × 6 = 300` là hợp lý.
+- **Mã hoá dữ liệu.** Dải được lưu trong `correct_answer` của câu `estimate` dưới dạng `"lo-hi"`, không đổi schema; API lấy câu hỏi không trả đáp án hay dải.
+- **Phản hồi bốn tổ hợp.** Server phân loại (ước lượng hợp lý hay không) × (kết quả chính xác đúng hay sai); mỗi tổ hợp có một thông điệp riêng.
+- **Fixture.** 12 câu synthetic (phép nhân và chia) trong `data/seed.json`, tái lập bằng `npm run reset-db`.
+
+## 3. Phạm vi thay đổi
+
+- **Có thay đổi:** `server/api.js` (nhánh chấm `estimate`), `public/assets/js/pages/exercise.js` (giao diện hai bước), `data/seed.json` (fixture), script `npm test`, workflow CI.
+- **Không thay đổi:** `server/auth.js`, session, tài khoản mẫu, deployment, các route `/api/auth|teacher|admin/*`, và hành vi của 4 type câu hỏi hiện có (`multiple-choice`, `input`, `compare`, `paint`).
+
+## 4. Cài đặt và chạy
+
+Yêu cầu: Node.js 18+.
 
 ```bash
-npm install     # chỉ cần chạy 1 lần đầu
-npm start       # mở http://localhost:3000
+npm ci
+npm run reset-db     # tạo lại CSDL từ data/seed.json (gồm các câu fixture estimate)
+npm start
+npm test             # sẽ bổ sung ở giai đoạn Build
 ```
 
-Lần chạy đầu, server tự tạo `data/vuon-toan.db` và nạp dữ liệu mẫu từ `data/seed.json`.
+Đăng nhập bằng tài khoản synthetic của starter.
 
-### Tài khoản mẫu
+## 5. Kiểm thử
 
-| Vai trò | Tên đăng nhập | Mật khẩu | Ghi chú |
-|---|---|---|---|
-| Học sinh | `hocsinh01` … `hocsinh99` | `123456` | 99 tài khoản giả lập lớp 3A2, dùng cho test/demo hackathon — không phải học sinh thật |
-| Giáo viên | `giaovien01` | `123456` | Vào thẳng Góc Giáo Viên |
+Ba tầng: **unit** cho hàm thuần (`computeEstimateBand`, `parseBand`, `isReasonableEstimate`, `classifyFeedback`), **API/tích hợp** trên SQLite tạm (không lộ đáp án, chấm và lưu đúng, hồi quy 4 type cũ), và **thủ công** (bàn phím, thông báo lỗi, an toàn). Dùng `node --test`; CI chạy `npm ci` và `npm test` trên Node 18 và 20 cho mỗi Pull Request.
 
-> Khi đưa lên Internet thật: đổi mật khẩu các tài khoản mẫu, và đặt biến môi trường
-> `SESSION_SECRET` bằng một chuỗi bí mật dài trước khi chạy `npm start`.
+## 6. Tài liệu
 
-## 2. Cấu trúc thư mục
+| Tài liệu | Nội dung |
+|---|---|
+| [`artifacts/REQUIREMENTS.md`](artifacts/REQUIREMENTS.md) | Hiện trạng hệ thống, 9 yêu cầu chức năng, 5 yêu cầu phi chức năng, 9 tiêu chí chấp nhận (Given–When–Then), bảng truy vết B-01…B-12, 12 fixture |
+| [`artifacts/DECISIONS.md`](artifacts/DECISIONS.md) | 5 quyết định thiết kế (ADR-001…005) kèm phương án, lý do, đánh đổi |
+| [`artifacts/TEST_PLAN.md`](artifacts/TEST_PLAN.md) | Chiến lược, các ca T-UNIT/T-API/T-INT/T-FIX/T-SEC/T-UI, CI, tiêu chí hoàn thành |
 
-```
-vuon-toan-lop-3/
-├─ public/                    # Giao diện (server phục vụ thư mục này)
-│  ├─ *.html                  # Mỗi trang 1 file, CHỈ chứa nội dung trang
-│  └─ assets/
-│     ├─ css/app.css          # CSS nền dùng chung (trước đây lặp trong 11 file)
-│     └─ js/
-│        ├─ tailwind.config.js  # Cấu hình Tailwind dùng chung 1 chỗ duy nhất
-│        ├─ core/  (api.js = gọi API, app.js = đăng nhập + nối link, game-score.js = lưu điểm game)
-│        ├─ components/ (navbar.js, sidebar.js=bản đồ link, footer.js dùng chung)
-│        └─ pages/  (logic riêng từng trang: login.js, exercise.js, exam.js,...)
-├─ public/lesson.html       # Trang làm bài chung cho bộ đề giáo viên tự tạo
-├─ server/
-│  ├─ index.js   # Điểm vào: API /api/* + phục vụ giao diện
-│  ├─ db.js      # Tạo bảng + nạp dữ liệu mẫu vào SQLite
-│  ├─ auth.js    # Cookie đăng nhập httpOnly, băm mật khẩu bcrypt
-│  └─ api.js     # Toàn bộ API (đăng nhập, bài học, nộp bài, giáo viên...)
-├─ data/
-│  ├─ seed.json      # DỮ LIỆU GỐC: tài khoản mẫu, bài học, câu hỏi
-│  └─ vuon-toan.db   # CSDL SQLite (tự sinh khi chạy; sao lưu = chép file này)
-├─ tools/build-from-original.py  # Dựng lại giao diện từ bản gốc khi cần
-├─ original-backup/  # NGUYÊN BẢN code cũ trước khi sửa (để đối chiếu/khôi phục)
-└─ HUONG-DAN-THEM-BAI.md  # Cách thêm bài học/câu hỏi mới
-```
+## 7. Điểm còn cần xác nhận trong mã nguồn
 
-## 3. API chính
+Theo `REQUIREMENTS.md` Mục 7: cách `exercise.js` chọn bộ đề theo bài học; cấu trúc `detail` của phản hồi `POST /api/submissions`; cách route lấy câu hỏi loại `correct_answer`; cách tính điểm và sao khi một bộ trộn nhiều type; cách test đăng nhập bằng tài khoản synthetic mà không sửa `auth.js`.
 
-| Method | Đường dẫn | Mô tả |
+## 8. Tiến độ
+
+| Mốc | Ngày | Trạng thái |
 |---|---|---|
-| POST | `/api/auth/login` · `/api/auth/logout` | Đăng nhập (cookie httpOnly) / đăng xuất |
-| GET | `/api/auth/me` | Thông tin người đang đăng nhập |
-| GET | `/api/lessons`, `/api/me/progress` | Bài học kèm tiến độ, khóa/mở theo thứ tự |
-| GET | `/api/question-sets/:id/questions` | Câu hỏi — **không kèm đáp án** |
-| POST | `/api/submissions` | Nộp bài; server chấm, lưu điểm, cộng sao theo tiến bộ |
-| GET | `/api/leaderboard` | Bảng xếp hạng tính từ sao thật trong DB |
-| GET/POST | `/api/teacher/students` | Giáo viên xem / cấp tài khoản học sinh |
-| POST | `/api/teacher/students/:id/reset-password` | Giáo viên đặt lại mật khẩu |
+| M1 — Understand: yêu cầu, ADR, kế hoạch test | 05–08/11/2026 | Đã có tài liệu (Checkpoint 1: cuối 08/11) |
+| M2 — Build: vertical slice, test | 09–15/11/2026 | Chưa bắt đầu (Checkpoint 2: cuối 15/11) |
+| M3 — Harden: CI, bảo mật, tài liệu bàn giao | 16–19/11/2026 | Chưa bắt đầu |
+| M4 — Nộp bài | 20/11/2026 | — |
+| Demo/Viva | 21/11/2026 | — |
 
-## 4. Đã làm ở Đợt 1 (cốt lõi)
-
-- Tách cấu hình Tailwind + CSS + JS dùng chung (trước: sao chép vào cả 11 file HTML);
-  sửa tên file sai chính tả (`excersise→exercise`, `leadboard→leaderboard`, `schudule→schedule`).
-- Nối lại toàn bộ link menu từng là `href="#"` sang trang thật.
-- Backend Node.js + Express + SQLite; mật khẩu băm bcrypt; phân quyền học sinh/giáo viên.
-- Trang chủ render bài học từ API; luyện tập & kiểm tra (20 câu, đếm giờ, tự nộp khi hết giờ)
-  chấm điểm trên server và lưu tiến độ — tải lại trang không mất điểm.
-- Góc Giáo Viên: xem danh sách lớp với điểm trung bình thật, **cấp tài khoản + đặt lại mật khẩu** cho học sinh.
-
-## 5. Đợt 2 (đã hoàn thành)
-
-- **4 mini-game chơi thật & lưu điểm**: Bắn Bóng (10 vòng phép nhân), Đua Xe (chọn cổng đáp án),
-  Lật Thẻ Trí Nhớ (ghép cặp phép tính–kết quả), Câu Cá (10 vòng phép chia). Điểm gửi lên server,
-  sao chỉ cộng theo phần vượt kỷ lục cũ của từng em.
-- **Bảng xếp hạng render 100% từ dữ liệu thật** (`/api/leaderboard`): hạng, lượt làm bài, điểm TB, tổng sao.
-- **Trang làm bài chung `lesson.html`**: mọi bộ đề giáo viên tạo đều làm được tại đây
-  (`lesson.html?lesson=bai-16&set=...`), hỗ trợ trắc nghiệm / điền số / điền dấu / tô màu.
-- **Quản trị trên web (Góc Giáo Viên)**: thêm/sửa/xóa bài học, tạo bộ đề, thêm/sửa/xóa câu hỏi,
-  xuất báo cáo lớp ra CSV mở bằng Excel. Học sinh không vào được khu vực này.
-
-## 6. Đợt 3 (đã hoàn thành)
-
-- **Đăng nhập dự phòng 2 lớp**: cookie httpOnly + Bearer token trong trình duyệt
-  (tự động dùng khi cookie bị chặn, ví dụ xem qua khung iframe/xem trước).
-- **Thống kê lớp thật** (`/api/teacher/analytics`): 4 thẻ KPI đầu trang Góc Giáo Viên đã là số thật,
-  thêm biểu đồ lượt làm bài 7 ngày, top 3 dạng bài hay sai nhất, tiến độ từng bài học.
-  Hai khối biểu đồ/chẩn đoán mẫu cũ được ẩn để tránh nhầm số liệu.
-- **CSS Tailwind tĩnh** (`assets/css/tailwind.build.css`, chạy `npm run build:css` để gói lại):
-  phòng máy mất Internet giao diện vẫn giữ nguyên; CDN chỉ còn là lớp dự phòng.
-- **Sẵn sàng deploy**: endpoint `/api/health`, hỗ trợ `DB_PATH` cho ổ đĩa bền,
-  `Dockerfile` + `DEPLOY.md` (VPS/Render/Railway, việc cần làm với `SESSION_SECRET` và mật khẩu mẫu).
-
-## 7. Nếu muốn làm tiếp
-
-- Nhúng font/icon tại chỗ để offline 100% cả chữ và biểu tượng.
-- Thực hiện deploy thật (cần tài khoản hosting/tên miền của trường).
-- Thêm biểu đồ theo tuần/tháng và xuất phiếu bồi dưỡng PDF theo dạng bài hay sai.
+Sản phẩm phục vụ học tập, dùng dữ liệu synthetic.
