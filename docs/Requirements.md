@@ -57,9 +57,8 @@ Không làm:
 
 ## 5. Điều chưa chắc
 
-Nhóm mới đọc `architecture-reference.md`, chưa đọc kỹ mã nguồn, nên còn mấy điểm cần kiểm tra:
+Nhóm mới đọc `architecture-reference.md`, chưa đọc kỹ mã nguồn, nên còn vài điểm cần kiểm tra:
 
 1. Độ lớn của các phép nhân/chia trong `data/seed.json`. Câu mẫu trong tài liệu là bảng nhân 6 (`6 × 2`, `54 : 6`), mà ước lượng chỉ có ý nghĩa với số lớn hơn như `38 × 6`. Nếu cần dùng số lớn hơn, nhóm sẽ hỏi TA xem có bị tính là "thêm nội dung SGK mới" không.
 2. `server/api.js` hoặc `exercise.js` có kiểm tra danh sách `type` hợp lệ hay không.
 3. Bộ câu hỏi mới gắn vào bài học nào (`lessonId`).
-4. Cách đăng nhập bằng tài khoản mẫu khi viết test API, mà không sửa phần auth.

@@ -105,10 +105,3 @@ Cần đăng nhập bằng tài khoản synthetic có sẵn và không sửa ph�
 | T-42 | CI chạy `npm ci` và `npm test` trên Pull Request | xem workflow xanh |
 | T-43 | Không có secret hay thông tin thật | tìm `.env`, token, tên thật trong repo |
 
-## 7. Giới hạn đã biết
-
-Sẽ ghi vào `TEST_REPORT.md` về sau:
-
-- Test API phụ thuộc cách đăng nhập tài khoản mẫu, có thể phải kiểm tra tay.
-- Thứ tự "ước lượng trước, tính sau" do giao diện đảm bảo. Server không tự chứng minh được thứ tự thời gian, nhưng API không bao giờ trả đáp án trước khi nộp.
-- Test giao diện làm tay, không tự động.

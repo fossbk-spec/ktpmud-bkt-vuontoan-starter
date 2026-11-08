@@ -1,6 +1,6 @@
 # DECISIONS.md
 
-Các quyết định thiết kế của nhóm cho Track B. Căn cứ: `docs/architecture-reference.md` (mục 3, 4, 7).
+Các quyết định thiết kế của nhóm cho Track B
 
 ## ADR-001: Thêm loại câu hỏi mới `estimate`, giữ nguyên 4 loại cũ
 
@@ -19,7 +19,7 @@ Vì sao: tài liệu chuẩn (mục 7) nói chỉ thêm, không đổi hành vi 
 
 ## ADR-002: Khoảng chấp nhận là ±20% quanh đáp án đúng
 
-Vấn đề: đề không khóa ngưỡng sai số, nên nhóm phải tự định nghĩa và giải thích được. Quy tắc cần đủ đơn giản để nói trong một câu với học sinh lớp 3.
+Vấn đề: đề không khóa ngưỡng sai số, nên nhóm em cần nghiên cứu và đưa ra ngưỡng cho hợp lý, hơi phức tạp. Quy tắc cần đủ đơn giản để nói trong một câu với học sinh lớp 3.
 
 Các cách đã cân nhắc:
 - A. Ước lượng đúng nếu nằm trong khoảng từ 80% đến 120% đáp án đúng.
