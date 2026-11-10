@@ -1,7 +1,7 @@
 # ADR-002: Quy tắc chấm ước lượng bằng sai số tương đối 20%
 
-- **Trạng thái:** Proposed — Chờ nhóm phê duyệt
-- **Ngày:** 08/11/2026
+- **Trạng thái:** Accepted (quyết định nội bộ nhóm; chờ GV/TA phản hồi)
+- **Ngày:** 08/11/2026 · **Cập nhật:** 11/11/2026
 - **Dự án:** Vườn Toán Lớp 3 — Track B
 - **Liên quan:** B-02, B-03, B-05, B-06, B-08, B-12
 - **Phụ thuộc:** ADR-001
@@ -65,9 +65,9 @@ Gọi:
 
 Tương đương:
 
-`0.8 * A <= E <= 1.2 * A`
+`4 * A <= 5 * E && 5 * E <= 6 * A`
 
-Hai đầu mút được tính là hợp lệ.
+Hai đầu mút được tính là hợp lệ. **Không dùng phép nhân `0.8 * A` / `1.2 * A` trong điều kiện chấm**, vì sai số dấu phẩy động có thể loại nhầm giá trị ở biên (`A = 35, E = 28`). Dùng `BigInt` sau khi kiểm tra `Number.isSafeInteger` hoặc một miền giá trị nguyên được giới hạn chặt chẽ.
 
 ### Miền dữ liệu
 
@@ -81,23 +81,22 @@ Hai đầu mút được tính là hợp lệ.
 
 Các giới hạn trên là quyết định về phạm vi dữ liệu của chức năng mới, không phải giới hạn áp dụng cho bốn loại câu hỏi cũ.
 
-## 4. Quy tắc tính điểm
+## 4. Quy tắc chấm đúng/sai toàn câu — thay thế quyết định 4/6
 
-Đề xuất mỗi câu hỏi có tối đa 10 điểm:
+Nhóm **bỏ điểm thành phần 4/6** sau nhận xét Checkpoint 1. Một câu chỉ được tính đúng (`1`) khi **cả ước lượng đạt** và **kết quả tính chính xác đúng**; mọi trường hợp còn lại là sai (`0`). Không có điểm một phần.
 
-- Ước lượng hợp lý: 4 điểm.
-- Kết quả tính chính xác đúng: 6 điểm.
+| Ước lượng | Tính chính xác | Đúng toàn câu | Điểm quy ước |
+|---|---|---|---:|
+| Đạt | Đúng | Có | 1 |
+| Đạt | Sai | Không | 0 |
+| Không đạt | Đúng | Không | 0 |
+| Không đạt | Sai | Không | 0 |
 
-Hai phần được chấm độc lập.
-
-| Ước lượng | Tính chính xác | Điểm |
-|---|---|---|
-| Đạt | Đúng | 10 |
-| Đạt | Sai | 4 |
-| Không đạt | Đúng | 6 |
-| Không đạt | Sai | 0 |
-
-Điểm toàn bộ bài được quy đổi theo cơ chế tính phần trăm của hệ thống hiện có.
+- `correct_count` = số câu đúng toàn phần; `total_count` = số câu được chấm trong bộ bài (12 câu ở phiếu mới).
+- `score_percent = round(100 * correct_count / total_count)` theo quy ước làm tròn của hệ thống hiện tại; ví dụ 9/12 = 75%.
+- `completed`, sao thưởng và tiến độ **giữ nguyên quy tắc hiện có**, không tự đặt ngưỡng hoàn thành mới. Cần kiểm thử tương thích với backend hiện tại.
+- Phản hồi hai phần (`estimateAccepted`, `exactCorrect`) vẫn được lưu/hiển thị để hỗ trợ học tập nhưng **không** làm tăng `correct_count` khi chỉ đúng một phần.
+- Học sinh hết thời gian ước lượng: phần ước lượng không đạt; vẫn có thể làm phần chính xác, nhưng câu không thể được tính đúng toàn phần.
 
 ## 5. Xử lý các trường hợp biên
 
@@ -131,9 +130,9 @@ Dữ liệu không hợp lệ phải bị từ chối theo hợp đồng API đ�
 - Không làm tròn tỷ lệ sai số trước khi so sánh với ngưỡng.
 - Để tránh sai số số thực ở biên, backend có thể kiểm tra bằng phép so sánh số nguyên tương đương:
 
-`5 * abs(E - A) <= A`
+`4 * A <= 5 * E && 5 * E <= 6 * A`
 
-Công thức này tương đương ngưỡng 20% khi `A > 0`.
+Công thức này tương đương ngưỡng 20% khi `A > 0`. Để tránh tràn số, dùng `BigInt(A)` và `BigInt(E)` sau kiểm tra kiểu và miền giá trị. Ví dụ `A=35, E=28` phải đạt ở biên dưới.
 
 ## 8. Phản hồi cho học sinh
 
@@ -141,7 +140,7 @@ Phản hồi cần phân biệt:
 
 - Ước lượng hợp lý hoặc chưa hợp lý.
 - Kết quả tính chính xác đúng hoặc sai.
-- Điểm nhận được.
+- Kết quả đúng/sai **toàn câu** (0 hoặc 1), không có điểm thành phần.
 
 Thông báo cần dễ hiểu, không chỉ dựa vào màu sắc và không sử dụng ngôn ngữ gây áp lực cho học sinh.
 
@@ -160,7 +159,8 @@ Thông báo cần dễ hiểu, không chỉ dựa vào màu sắc và không s�
 ## 10. Kế hoạch xác minh
 
 - Unit test công thức 20% và các giá trị biên.
-- Unit test bốn trường hợp tính điểm.
+- Unit test bốn tổ hợp đúng/sai toàn câu, `correct_count` và `score_percent`.
+- Test biên với A = 25, 35, 72, 76, 100 và cả 12 fixture ở TEST_PLAN.md.
 - Test dữ liệu thiếu, sai kiểu và ngoài miền cho phép.
 - API test để xác nhận backend chấm độc lập với frontend.
 - Integration test để xác nhận kết quả được lưu trong SQLite.
@@ -169,7 +169,15 @@ Thông báo cần dễ hiểu, không chỉ dựa vào màu sắc và không s�
 ## 11. Vấn đề còn mở
 
 - Thiết kế JSON chứa hai phần câu trả lời.
-- Cách lưu điểm thành phần và phản hồi trong `attempts`.
+- Cách lưu phản hồi hai phần trong `attempts.answers_json` mà không ảnh hưởng các type cũ.
 - Cách lựa chọn câu hỏi mẫu để học sinh thực sự thực hành ước lượng thay vì chỉ tính chính xác.
-- Cách quy đổi điểm khi bộ câu hỏi có tổng điểm khác 10.
-- Việc xác nhận ngưỡng 20% với nhóm và trợ giảng trước khi chuyển trạng thái ADR sang Accepted.
+- Cách ánh xạ điểm 0/1 của `estimate` với `questions.points` hiện có (đề xuất tất cả 12 câu có cùng trọng số; giữ cách tính phần trăm theo số câu đúng).
+- Xin GV/TA phản hồi về phương án chấm toàn câu và thời hạn ước lượng; quyết định đã được nhóm thống nhất, chưa phải phê duyệt từ GV.
+## 12. Trường hợp E trùng A và giới hạn sư phạm
+
+Nếu `E = A`, sai số bằng 0%, do đó **đạt** theo quy tắc 20%. Đây là kết quả đánh giá **độ gần đúng của con số**, không phải bằng chứng học sinh đã dùng phương pháp ước lượng. Giới hạn thời gian và hai giai đoạn chỉ khuyến khích thao tác ước lượng trước; không chứng minh được quá trình tư duy. Không loại đáp án trùng nhau một cách tùy tiện.
+
+## 13. Nhật ký thay đổi quyết định
+
+- 08/11: Đề xuất 4 điểm ước lượng + 6 điểm tính đúng và so sánh theo tỷ lệ số thực.
+- 11/11: Theo góp ý Checkpoint 1, chuyển sang **so sánh số nguyên**, **đúng/sai toàn câu**, thống nhất `correct_count` với `score_percent`; giữ phản hồi riêng từng phần.
