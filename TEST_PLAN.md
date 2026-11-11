@@ -42,6 +42,7 @@ Kiểm thử bao phủ dạng bài `estimate` và hồi quy cho 4 type hiện c�
 | T-API-04 | Estimate đúng, exact sai | điểm một phần; phản hồi đúng tổ hợp |
 | T-API-05 | Hồi quy: nộp bộ `phieu-bai-9-10` như trước | điểm không đổi |
 | T-API-06 | Thiếu `answers`, id câu lạ, kiểu dữ liệu sai | 4xx hoặc chấm sai; không 5xx |
+| T-API-07 | Nộp trực tiếp qua API: (a) `est-NN` bỏ trống/thiếu khoá + `est-NN-exact` đúng; (b) thiếu cả hai câu của một mục | (a) estimate chấm sai, exact chấm đúng, điểm một phần, phản hồi "không hợp lý / đúng"; (b) cả hai chấm sai; không 5xx (ADR-004) |
 | T-INT-01 | Lấy danh sách bài học | bộ `estimate` xuất hiện trong luồng bài học (B-01) |
 | T-INT-02 | Nộp, khởi động lại server, đọc tiến độ của người dùng | kết quả/tiến độ còn nguyên (B-05) |
 | T-FIX-01 | Chạy `reset-db` hai lần liên tiếp | cùng tập câu hỏi `estimate` (B-02) |
@@ -56,6 +57,7 @@ Kiểm thử bao phủ dạng bài `estimate` và hồi quy cho 4 type hiện c�
 | T-UI-01 | Hiển thị đúng bốn thông điệp phản hồi |
 | T-UI-02 | Chỉ dùng bàn phím: Tab đến ô nhập, Enter xác nhận, bước 2 nhận focus, vòng focus nhìn thấy (B-12) |
 | T-UI-03 | Nhập sai: thông báo tiếng Việt dễ hiểu, được báo qua `aria-live` |
+| T-UI-04 | Làm mới trang giữa bước 1 và bước 2: mục quay về bước 1, không có bản ghi `attempts` mới, không lỗi; hành vi tương tự 4 type cũ (ADR-004) |
 
 ## 3. Tự động hoá và CI
 
