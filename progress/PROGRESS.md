@@ -8,9 +8,9 @@ Fork: https://github.com/nguyennhuhienfpt718-svg/ktpmud-bkt-vuontoan-starter
 <!-- Track A: A-01…A-11 · Track B: B-01…B-10 (đề thi Mục 7.3 / 8.3). Đủ mọi mã. -->
 | Mã | Trạng thái (Chưa / Đang / Xong) | Bằng chứng (commit / CI / file) | Ghi chú |
 |---|---|---|---|
-| B-01 | Chưa | | |
-| B-02 | Chưa | | |
-| B-03 | Chưa | | |
+| B-01 | Đang | file `REQUIREMENTS.md` (commit `c91a911`) | Đang phân tích yêu cầu |
+| B-02 | Đang | file `DECISIONS.md` (commit `bb875ae`) | Đang thiết kế kiến trúc |
+| B-03 | Đang | file `TEST_PLAN.md` (commit `8e51f30`) | Đang lên kịch bản test |
 | B-04 | Chưa | | |
 | B-05 | Chưa | | |
 | B-06 | Chưa | | |
@@ -28,22 +28,22 @@ Fork: https://github.com/nguyennhuhienfpt718-svg/ktpmud-bkt-vuontoan-starter
 ### 1.3. Timeline dự kiến đến khi hoàn thành
 | Việc | Vai trò phụ trách | Mốc (CP2 15/11 · M3 · Freeze 19/11 · M4 20/11) | Ngày dự kiến |
 |---|---|---|---|
-| Hoàn thiện AC B-01 đến B-05 | Dev 1, Dev 2 | CP2 15/11 | 14/11 |
-| Hoàn thiện AC B-06 đến B-10 | Dev 3, Dev 4 | M3 | 17/11 |
-| Đóng băng và nộp bài | Cả nhóm | Freeze 19/11 | 19/11 |
+| Hoàn thiện tài liệu, kiến trúc (B-01 đến B-03) | Dev 1 | CP2 15/11 | 13/11 |
+| Triển khai code các tính năng (B-04 đến B-10) | Dev 2, Dev 3 | M3 | 17/11 |
+| Cập nhật test tự động, CI và slide báo cáo | Cả nhóm | Freeze 19/11 | 19/11 |
 
 ### 1.4. Rủi ro / đang vướng
-- Đang triển khai dự án theo kế hoạch, chưa có vướng mắc lớn.
+- Đã hoàn thành bộ khung tài liệu cơ bản, chuẩn bị bước vào giai đoạn code tính năng.
 
 ### 1.5. Câu hỏi cho GV
-Q1: Chưa có.
+Q1: Không có.
 
 ### 1.6. Phân công (alias hoặc vai trò, KHÔNG ghi họ tên/MSSV)
 | Alias / vai trò | Đầu việc chính | Commit/PR tiêu biểu |
 |---|---|---|
-| Dev 1 | Setup repo, làm file PROGRESS | |
-| Dev 2 | Setup CSDL / backend | |
-| Dev 3 | Xử lý frontend | |
+| Dev 1 | Phân tích yêu cầu, lên kiến trúc và kế hoạch test | `8e51f30` (TEST_PLAN.md), `bb875ae` (DECISIONS.md), `c91a911` (REQUIREMENTS.md), `f0b65c9` (README.md) |
+| Dev 2 | Code Backend / Database | |
+| Dev 3 | Code Frontend / UI | |
 
 ## PC-2 — 18/11/2026
 
@@ -79,6 +79,6 @@ Q1: Chưa có.
 ### 2.5. Rủi ro / câu hỏi cho GV
 
 ## Kết quả cuối — Freeze 19/11/2026
-Tag: bkt-2026-<mã nhóm>-rc1 · SHA: 
+Tag: bkt-2026-56-rc1 · SHA: 
 Trạng thái cuối từng mã AC: (cập nhật bảng 2.2 hoặc ghi "như 2.2 trừ: …")
 Những việc trong timeline chưa hoàn thành và lý do:
