@@ -37,21 +37,24 @@ Vì sao: B quá hẹp, nhiều cách ước lượng hợp lý khác (làm tròn
 Kiểm chứng: nhóm đã chạy thử công thức trên 12 câu dự kiến (bảng trong `TEST_PLAN.md`). Tất cả đáp án là số nguyên, ước lượng ví dụ đều nằm trong khoảng, sai số từ 1,4% đến 7,1%.
 
 Đánh đổi: với đáp án rất nhỏ khoảng sẽ hẹp, nên các câu hỏi chọn đáp án đủ lớn (từ 49 trở lên). Hằng số 20% đặt ở một chỗ trong code để dễ đổi. Khoảng này tính ở server từ `correct_answer`, không lưu thêm và không trả về trước khi nộp.
-
 ## ADR-003: Một câu có hai đáp án, lưu hai khóa trong `answers`
 
-Vấn đề: `POST /api/submissions` nhận `answers` là một object `{ idCâuHỏi: chuỗi }`, mỗi câu một giá trị. Dạng bài mới cần hai giá trị cho mỗi câu.
+Vấn đề: `POST /api/submissions` nhận `answers` là một object `{ idCâuHỏi: chuỗi }`, mỗi câu một giá trị. Dạng bài mới cần hai giá trị cho mỗi câu và cần đảm bảo luồng "ước lượng trước rồi mới tính đúng" (R3).
 
 Các cách đã cân nhắc:
-- A. Giữ nguyên hình dạng `answers`: `answers["est-1"]` là kết quả đúng, `answers["est-1__est"]` là ước lượng.
+- A. Giữ nguyên hình dạng `answers` gửi trong một lần `POST /api/submissions`: `answers["est-1"]` là kết quả đúng, `answers["est-1__est"]` là ước lượng; thứ tự chốt bước 1 trước khi mở bước 2 do giao diện giữ.
 - B. Gộp hai giá trị vào một chuỗi, ví dụ `"240|228"`.
 - C. Đổi `answers` thành object lồng nhau.
+- D. Lưu ước lượng phía server trước khi mở bước 2 (thêm API hoặc bảng lưu nháp từng bước).
 
 Chọn A.
 
-Vì sao: không đổi hình dạng dữ liệu mà client cũ đang dùng, mọi giá trị vẫn là chuỗi, và không phải viết bộ tách chuỗi dễ lỗi như B. `answers_json` trong bảng `attempts` tự lưu cả hai giá trị nên không cần sửa schema.
+Vì sao: không đổi hình dạng dữ liệu mà client cũ đang dùng, mọi giá trị vẫn là chuỗi, và không phải viết bộ tách chuỗi dễ lỗi như B. `answers_json` trong bảng `attempts` tự lưu cả hai giá trị nên không cần sửa schema hay thêm bảng/API lưu nháp như D.
 
-Đánh đổi: tên khóa `__est` là quy ước của nhóm, phải ghi rõ trong README để người sau không nhầm.
+Đánh đổi và giải trình giới hạn:
+- Tên khóa `__est` là quy ước của nhóm, phải ghi rõ trong README để người sau không nhầm.
+- Vì cả `est-1__est` và `est-1` gửi chung trong một lần `POST /api/submissions`, thứ tự "chốt ước lượng rồi mới tính" (R3) chỉ được đảm bảo ở giao diện (JavaScript khóa ô bước 2 cho đến khi chốt bước 1) và nếu gọi API trực tiếp thì bỏ qua được. Nhóm chọn chấp nhận giới hạn này (phương án a) vì ứng dụng phục vụ học sinh lớp 3 luyện tập trên trình duyệt, giữ cách nộp một lần giúp không phải sửa schema `server/db.js` và giữ nguyên kiến trúc API hiện có.
+- Xử lý khi refresh giữa bước 1 và bước 2 (B-05): nếu chưa nộp bài mà tải lại trang, dữ liệu chưa lên server nên sẽ mất nếu chỉ giữ trong biến JS. Để khắc phục, khi học sinh bấm chốt ước lượng ở bước 1, `exercise.js` lưu giá trị đã chốt vào `sessionStorage` theo mã bộ đề và câu hỏi; nếu refresh giữa hai bước, giao diện tự đọc lại từ `sessionStorage`, giữ nguyên ước lượng đã khóa và mở sẵn bước 2. Khi nộp bài xong (đã lưu vào bảng `attempts` và `progress`), `sessionStorage` của bộ đề sẽ được xóa.
 
 ## ADR-004: Một câu tính đúng khi cả ước lượng và kết quả đều đúng
 
