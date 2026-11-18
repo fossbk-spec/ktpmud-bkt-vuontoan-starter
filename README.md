@@ -1,18 +1,7 @@
-> **Đây là bản sao đóng băng (starter) dùng cho Bài kiểm tra Hackathon (BKT-2 /
-> Track B) môn Kỹ thuật Phần mềm Ứng dụng (KTPMUD) — KHÔNG phải ứng dụng thật
-> đang vận hành, không kết nối tới dữ liệu/CSDL production thật.** Toàn bộ tên
-> người và ảnh thật trong bản gốc đã được thay bằng dữ liệu hư cấu trước khi
-> công khai repo này. Sinh viên làm việc trên fork của repo NÀY, nộp bài qua
-> `ktpmud-project` theo đúng hướng dẫn `nop_bai.md` của KTPMUD — không PR vào
-> ứng dụng Vườn Toán thật.
-
----
 
 # 🌱 Vườn Toán Lớp 3 — Trường Tiểu học Hoàng Mai
 
-Web học Toán lớp 3 gồm giao diện học sinh (bài học, luyện tập, kiểm tra, trò chơi, bảng xếp hạng)
-và khu vực giáo viên (theo dõi lớp, cấp tài khoản). Đợt 1 đã nối **backend thật**:
-đăng nhập/đăng xuất, chấm điểm trên server, lưu điểm & tiến độ vào cơ sở dữ liệu SQLite.
+**Nhóm thực hiện:** Nhóm 43 — KTPMUD Hack Marathon 2026, Track B (`hoang_mai_toan`)
 
 ## 1. Cách chạy
 
@@ -113,3 +102,17 @@ vuon-toan-lop-3/
 - Nhúng font/icon tại chỗ để offline 100% cả chữ và biểu tượng.
 - Thực hiện deploy thật (cần tài khoản hosting/tên miền của trường).
 - Thêm biểu đồ theo tuần/tháng và xuất phiếu bồi dưỡng PDF theo dạng bài hay sai.
+
+
+## Dạng bài ước lượng (Track B)
+
+- Bộ câu hỏi mới có ID `uoc-luong-truoc-khi-tinh`, được nạp từ `data/seed.json`.
+- 12 fixture synthetic được lưu tại `data/estimation_fixtures.json`; `server/db.js` seed bổ sung idempotent để DB đã tồn tại cũng nhận bộ câu hỏi mới.
+- Quy tắc chấp nhận: ±20% quanh kết quả chính xác; `correct_answer` lưu khoảng đóng `lo-hi`.
+- Module chấm điểm: `server/estimationScorer.js`.
+- API lấy câu hỏi không trả đáp án chính xác của câu `estimate`; API kiểm tra riêng ước lượng chỉ trả kết luận hợp lý/chưa hợp lý. Khi nộp, gửi `answers[questionId] = { estimate, exact }`; backend chấm độc lập hai phần.
+- Trang `lesson.html` hiển thị hai bước: nhập ước lượng trước, sau đó mới mở ô tính chính xác; kết quả cuối cùng phân biệt đủ bốn trường hợp phản hồi.
+- Từ hộp thoại bài học số 10 trong Mục lục SGK có liên kết riêng đến bộ bài ước lượng, không thay thế phiếu luyện tập cũ.
+- Chạy unit tests: `npm test`.
+
+**Giới hạn xác minh:** Giao diện và điều hướng đã được tích hợp vào mã nguồn; cần chạy thử trên trình duyệt cùng API/SQLite sau khi cài đủ dependencies. Các kịch bản API/UI và GitHub Actions chưa được xác nhận chạy thành công trong môi trường này.
