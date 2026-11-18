@@ -1,0 +1,8 @@
+{
+  "starter_repo": "https://github.com/fossbk-spec/ktpmud-bkt-vuontoan-starter",
+  "starter_commit": "TODO: SHA-40-cua-tag-bkt-2026-v1-hoac-bkt-2026-v1.1",
+  "fork_url": "https://github.com/vie-nv23/ktpmud-bkt-vuontoan-starter",
+  "final_commit": "TODO: SHA-40-cua-commit-code-sau-khi-freeze",
+  "release_tag": "bkt-2026-10-rc1",
+  "ci_run_url": "https://github.com/vie-nv23/ktpmud-bkt-vuontoan-starter/actions/runs/44297744450"
+}
