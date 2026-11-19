@@ -8,6 +8,7 @@ const express = require('express');
 const bcrypt = require('bcryptjs');
 const db = require('./db');
 const { setAuthCookie, clearAuthCookie, requireAuth, requireTeacher } = require('./auth');
+const { parseEstimateAnswer, scoreEstimate } = require('./estimate');
 
 const router = express.Router();
 const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
@@ -168,20 +169,44 @@ function setMeta(setId) {
 }
 router.post('/submissions', requireAuth, (req, res) => {
   const { setId, answers = {}, durationSec = 0 } = req.body || {};
+  if (!answers || typeof answers !== 'object' || Array.isArray(answers)) {
+    return res.status(400).json({ error: 'Danh sách câu trả lời không hợp lệ.' });
+  }
   const meta = setMeta(setId);
   if (!meta) return res.status(400).json({ error: 'Bộ bài không hợp lệ.' });
   const questions = db.prepare('SELECT * FROM questions WHERE set_id=? ORDER BY sort_order').all(setId);
   let earned = 0, max = 0, correct = 0;
-  const detail = questions.map(q => {
-    max += q.points;
-    const given = answers[q.id] == null ? '' : String(answers[q.id]).trim().toLowerCase();
-    const ok = given === String(q.correct_answer).trim().toLowerCase();
-    if (ok) { earned += q.points; correct++; }
-    return { questionId: q.id, correct: ok, correctAnswer: q.correct_answer };
-  });
+  const detail = [];
+  try {
+    for (const q of questions) {
+      max += q.points;
+      if (q.type === 'estimate') {
+        const expected = parseEstimateAnswer(q.correct_answer);
+        const scored = scoreEstimate(q.points, expected, answers[q.id]);
+        earned += scored.earnedPoints;
+        if (scored.correct) correct++;
+        detail.push({
+          questionId: q.id,
+          correct: scored.correct,
+          estimateCorrect: scored.estimateCorrect,
+          exactCorrect: scored.exactCorrect,
+          earnedPoints: scored.earnedPoints,
+          maxPoints: scored.maxPoints,
+          correctAnswer: expected,
+        });
+      } else {
+        const given = answers[q.id] == null ? '' : String(answers[q.id]).trim().toLowerCase();
+        const ok = given === String(q.correct_answer).trim().toLowerCase();
+        if (ok) { earned += q.points; correct++; }
+        detail.push({ questionId: q.id, correct: ok, correctAnswer: q.correct_answer });
+      }
+    }
+  } catch (error) {
+    return res.status(400).json({ error: error.message || 'Dữ liệu câu trả lời không hợp lệ.' });
+  }
   const percent = max ? Math.round((earned / max) * 100) : 0;
 
-  // Sao thưởng chỉ tính trên phần % tiến bộ so với điểm cao nhất cũ (chống "cày" sao bằng cách nộp lại)
+  // Giữ nguyên cơ chế sao thưởng và cập nhật tiến độ của hệ thống.
   const old = db.prepare('SELECT * FROM progress WHERE user_id=? AND lesson_id=?').get(req.user.id, meta.lessonId);
   const oldBest = old ? old.best_score : 0;
   const starsEarned = Math.round(Math.max(0, percent - oldBest) / 100 * meta.starReward);

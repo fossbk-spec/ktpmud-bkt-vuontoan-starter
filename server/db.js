@@ -162,6 +162,32 @@ function seedIfEmpty() {
 seedIfEmpty();
 seedQuestionSets();
 
+/** Nạp bộ câu hỏi estimate theo fixture chuẩn; INSERT OR IGNORE an toàn với DB đã tồn tại. */
+function seedEstimateQuestions() {
+  const fixturePath = path.join(__dirname, '..', 'test', 'fixtures', 'estimate-fixtures.json');
+  const fixtures = JSON.parse(fs.readFileSync(fixturePath, 'utf8'));
+  db.prepare(`INSERT OR IGNORE INTO question_sets (id,title,kind,lesson_id,star_reward,duration_minutes)
+    VALUES (?,?,?,?,?,?)`).run('estimate-set-01', 'Ước lượng trước khi tính đúng', 'exercise', 'bai-10', 40, 15);
+  const insert = db.prepare(`INSERT OR IGNORE INTO questions
+    (id,set_id,lesson_id,type,prompt,options_json,correct_answer,points,category,sort_order)
+    VALUES (?,?,?,?,?,?,?,?,?,?)`);
+  const { calculateBounds } = require('./estimate');
+  const tx = db.transaction(() => {
+    fixtures.forEach((item, index) => {
+      const bounds = calculateBounds(item.result);
+      insert.run(
+        'estimate-' + item.id.toLowerCase(), 'estimate-set-01', 'bai-10', 'estimate',
+        item.left + ' ' + item.operation + ' ' + item.right + ' = ?',
+        null,
+        JSON.stringify({ lower: bounds.lower, upper: bounds.upper, exact: item.result }),
+        10, 'Ước lượng trước khi tính đúng', index + 1
+      );
+    });
+  });
+  tx();
+}
+seedEstimateQuestions();
+
 // Đảm bảo thông tin Cô Lan Anh (GV Chủ nhiệm minh họa) và học sinh luôn được cập nhật chính xác
 try {
   db.prepare("UPDATE users SET full_name = 'Cô Lan Anh (GV Chủ nhiệm minh họa)', class_name = '3A2' WHERE username = 'giaovien01'").run();
